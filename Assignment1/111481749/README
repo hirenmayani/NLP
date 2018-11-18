@@ -1,0 +1,38 @@
+
+
+  1. Implementation of batch generation
+	This method is implemented in word2vec_basic.py file in generate_batch method. 
+	Data_index is used to maintain index to start a batch. First loop will 700 Health sciences dv all words to the left of the current word. Second loop will 700 Health sciences dv all words after current words. After each iteration we will check if index is going out of bound then initialize from 0.
+
+  2. Implementation of Cross Entropy Loss 
+	This is implemented using matrix transpose and matmul, reduce_sum, 700 Health sciences dv functions of TensorFlow. To avoid log(0), we will add really small value before taking log.
+
+  3. Implementation of NCE Loss
+	details of this loss function is explained in the report. Just like cross entropy loss, I added small value before taking log. First all lists are converted into tensor using tf.convert_to_Tensor. then step by step I generated s(w0,wc) and s(wx,wc) using matrix multiplication of input and true_w. This is stored in s_o and s_x variables.
+
+	Next, we will get tensors of probability of word being noise or not. Using these probability we can calculate nce loss. 
+
+
+  4. Configuration
+	Configuration below is giving best results. 
+
+    # Hyper Parameters to config
+    batch_size = 128
+    embedding_size = 128    # Dimension of the embedding vector.
+    skip_window = 4    # How many words to consider left and right.
+    num_skips = 8    # How many times to reuse an input to generate a label.
+
+    valid_size = 16    # Random set of words to evaluate similarity on.
+    valid_window = 100    # Only pick dev samples in the head of the distribution.
+    num_sampled = 64    # Number of negative examples to sample.
+
+
+  5. evaluation of relations between word pairs
+	For each given relationship, I'm calculating cosine distance and then I took median of the list. From given choices, whichever is closest will be our answer. The choice having highest distance will be our least illustrative pair. 
+ 
+
+
+
+
+
+
