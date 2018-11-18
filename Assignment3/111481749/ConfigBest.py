@@ -18,4 +18,4 @@ n_Tokens1 = 18
 n_Tokens2 = 18
 n_Tokens3 = 12
 lam = 1e-8
-layers = 1 # possible values:1,2,3,"par"
+layers = "par" # possible values:1,2,3,"par"

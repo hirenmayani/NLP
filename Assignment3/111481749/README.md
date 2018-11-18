@@ -1,0 +1,5 @@
+- To execute code with multiple layers, you can change 'layers' property value in config file. 
+- You can also set value of 'layers' properly to execute parallel layers mentioned in 2(b)
+- different activation function tried are commented on line 472-479.
+- for 2(c), trainable is set false on line number 55. 
+- To reproduce result of best confirmation, one can use ConfigurationBest.py file. It can be loaded by commenting line-12 and un-commenting line 13.    

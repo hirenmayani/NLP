@@ -126,6 +126,6 @@ class DependencyTree:
 
     def print_tree(self):
         for i in range(1, self.n+1):
-             print str(i) + " " + str(self.getHead(i)) + " " + self.getLabel(i)
-        print
+             print( str(i) + " " + str(self.getHead(i)) + " " + self.getLabel(i))
+        print(' ')
 
