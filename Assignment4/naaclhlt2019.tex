@@ -1,0 +1,174 @@
+%
+% File naacl2019.tex
+%
+%% Based on the style files for ACL 2018 and NAACL 2018, which were
+%% Based on the style files for ACL-2015, with some improvements
+%%  taken from the NAACL-2016 style
+%% Based on the style files for ACL-2014, which were, in turn,
+%% based on ACL-2013, ACL-2012, ACL-2011, ACL-2010, ACL-IJCNLP-2009,
+%% EACL-2009, IJCNLP-2008...
+%% Based on the style files for EACL 2006 by 
+%%e.agirre@ehu.es or Sergi.Balari@uab.es
+%% and that of ACL 08 by Joakim Nivre and Noah Smith
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[hyperref]{naaclhlt2019}
+\usepackage{times}
+\usepackage{latexsym}
+
+\usepackage{url}
+
+\aclfinalcopy % Uncomment this line for the final submission
+%\def\aclpaperid{***} %  Enter the acl Paper ID here
+
+%\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
+\newcommand\BibTeX{B{\sc ib}\TeX}
+
+\title{Summary of pre-trained transformers, BERT and InferSent}
+
+\author{Hiren Mayani \\
+  Stony Brook Univerisity, NY \\
+  {\tt hmayani@cs.stonybrook.edu} \\}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+  Question-Answering system has long been area of interest in the field of Natural Language Processing. Several interesting methods have been developed over the years. Most of these systems are developed using supervised learning approach. These system use large data of questions and answers to train their model. But we do not have any data to train our system. To develop QA system for such a scenario, we can learn weights from other large datasets and then fine-tune it using Stony Brook University data. We will use some question-answer generating system to make our evaluation and test data-sets. First we were planning to use Bi-directional Attention Flow (BiDAF) to pre-train our system but accuracy of such system was  very low. So, we decided to go for state of the art system. We are first generating contextual word embedding using BERT (Bidirectional Encoder Representations from Transformers) and then we will fine-tune this using our sbu data. 
+  
+  
+In next three section I'm going to give summary of three research papers, improving language understanding with gnerative pre-training(radford 18), BERT and Infersent. All these three research paper are in the field of sentence embedding or contextual word embedding. First and second paper explicitly suggest a way to use its embedding for Question-Answer task. Infersent can also be use for QA task.
+
+\iffalse
+An introduction to the problem space of your project. What is the high-level IO, why is this important, why is this problem hard, and what broad type of techniques have been explored in this space. 
+\fi
+\section{Summary of radford. 18}
+
+\subsection{Task definition, objective and  motivation}
+Natural language understanding comprised of wide-range of tasks like QA system, sentence similarity, entailment etc. Getting large amount of labelled data for each of these tasks is expensive and inhuman task, Although we already have large amount of unlabelled data. We can use this unlabelled data to build language model using generative pre-training and then we can fine-tune our model using task-specific labelled data. Even when we have considerably large data, learning representation in unsupervised manner can give performance boost. At the time of release, this method significantly improve state of the art in 9 out of the 12 NLP tasks. 
+
+There have been several attempt to use un-supervised pre-training approach but their use of LSTM and RNN limits its prediction range. However in this paper, transformers are used to build model. Transformers have already shown significant improvement in many NLP tasks. But in previous attempts, they have used task specific optimization objective. Transformer provides more structured memory to handle long dependencies compared to RNN and LSTM. 
+
+
+\subsection{Key Idea and its technical description}
+As mentioned earlier, training task for this model is done in two following steps.
+
+\subsubsection{Unsupervised pre-training}
+
+Given corpus of token U = $u_{1}, . . . , u_{n}$ our learning objective is to maximize log likelihood of current token given last k tokens using different values of parameter $\theta$. 
+
+$ L_{1}(U) =\Sigma{logP(u_{i}|u_{i−k},...,u_{i−1};\theta)}$
+
+We can model this using Neural network and we can find optimized parameters using SGD.
+Above task is achieved using series of transformers and softmax at the end. Let $h_{0}$ be concatenation of token embedding and position embedding matrix. we can get all $h_{1},h_{2},....h_{n}$  using equation $ h_{l}= transformer\_block(h_{l-1})$. At the end, we can get P(u) using softmax on $h_{n}$ with some weight matrix.
+
+
+\subsubsection{Supervised fine-tuning}
+Once we have parameters $\theta$ after pre-training, we can use it in fine-tuning process. 
+As mentioned earlier, this process is task specific. We assume we have labeled dataset C, with input sequence tokens, $x^{1}, . . . , x^{m}$ and label y. This sequence is passed through  pre-trained model to obtain the final transformer block’s activation. Taking softmax on multiplication of this output and weight matrix will give us $P(y| x^{1}, x^{2}....x^{m})$. our learning objective is to maximize summation of all such instances. It can be given by following equation.
+
+$L_{2}(C) = \Sigma(log P(y| x^{1}, x^{2}....x^{m}))$.
+
+
+we may need to transform input and output data based on task. For text classification, we can directly perform model described above. But for Question-Answer task we need to do some modifications. we are given a context paragraph z, a question q, and a set of possible answers as. We can merge the document context and question with each possible answer separated by some delimiter. Then each of these sequences can be processed independently with this model. 
+
+
+\subsection{Conclusion, opinion and extension}
+transfer learning with language modeling has made unsupervised pre-training really popular and powerful. We can model understanding of language in embedding and we can use it in any kind of tasks. This is really useful since this embedding can be generated with unlabeled data and fine-tuning can be done using limited labelled data. 
+I believe the idea of improving embedding rather than improving some specific task is revolutionary. As mentioned earlier it performed better than state-of-the-art model in 9 out of 12 tasks. More important, it paved the way for current state-of-the-art architecture BERT, which is summarized in the next section. One obvious extension to this model is to train transformer in bi-direction, which is already being done by BERT. Another improvement that needs to be done is making it more task independent. We learned word2vec in class which was context-less. however, contextual model represent here improves performance substantially.
+
+\section{Summary of BERT}
+
+\subsection{Task definition, objective and its motivation}
+
+BERT stands for Bidirectional Encoder Representations from Transformers. BERT is also a language representation model. For each given input word it generates it's embedding. Similar to previous model, it is first pre-trained on large data of book corpus and Wikipedia then you can fine-tune it for task-specific requirements. So, there is no major architecture change for specif task and fine-tuning take way less time than pre-training. 
+
+But Unlike Radford et al. 2018, which was trained on left-to-right sequences, BERT is trained on bidirectinal sequences. \textit{Peters et al. (2018)} did bi-directional pre-training by concatenating left-to-right and right-to-left embedding but it is shallow. Deep bidirectional transformer can embed language based left and right context. Another main objective of this paper is to utilize one trend in Natural Language Processing, reducing task specific processing. BERT is able to perform 11 NLP task by just minor change in architecture. BERT performed better than stat-of-the-art solution available. 
+
+
+\subsection{Key Idea and its technical description}
+BERT does two tasks to pre-train network bidirectionally. First, Masked Language Model (MLM) and second is Next Sentence Prediction.
+
+MLM is unsupervised training, using corpus of books and wikipedia, authors have training the network. they used Masked LM(Taylor, 1953) to do this. They randomly masked 15\% of all Word tokens in each sequence. For example, for sequence \textit{"This is the last Assignment of NLP"}, one training instance will be \textit{'This is the last [MASK] of NLP.'} then we will try produce embedding of 'Assignment' as an output of the network. But the problem with this approch is that they are creating a mismatch between pre-training and fine-tuning, since the [MASK] token is never seen during fine-tuning. To overcome this, they replace word with random word in 10\% instance and they replace word with actual word ('Assignment' in this case) in 10\% instances. In rest of 80\% instances, its replaced by [MASK] token.
+
+In task-2 of Next sentence prediction, we input two pairs of the sentences to the BERT. these two senteces are separated by \textit{[SEP]} token. Then we try to predict \textit{IsNext} or \textit{NotNext}. While training we feed two random sentences in 50\% instances and we feed two consecutive senteces in other 50\% instances. For example,
+
+Input = \textit{\small [CLS] This is the last [MASK] of NLP [SEP] Then we just have final exams [SEP]}
+
+Label = \textit{\small IsNext}
+
+Input = \textit{\small [CLS] This is the last [MASK] of NLP [SEP] This popcorn is not crunchy [SEP]}
+
+Label = \textit{\small NotNext}
+
+Fine-tuning is task-specific. 9 out of 11 tasks were sentence classification tasks. in such tasks, they took softmax of output token to get class label. Only difference in sentence-pair classification tasks was to feed both sentences separated by [SEP] token. In QA system like SQuAD We need to produce span as an output. For that it is fine-tuned to produce two  more labels of [S] and [E] denoting start and end of span. Dot product of each word embedding with [S] and [E] will give probability of that word being start of span and end of span respectively. 
+
+
+\subsection{Conclusion, opinion and extension}
+As mentioned in the previous section, transfer learning with language modeling has made unsupervised pre-training really popular and powerful. Bi-directional architecture of BERT enable it more rich. It has to understand context in both direction.
+
+BERT has improved all 12 NLP tasks where they applied it. I believe BERT will have long-lasting effect in NLP like Imagenet has in Computer vision. One extension to this approach is sentence embedding. Many task can be improved if we have sentence level embedding. I believe for some tasks sentence embedding can be more powerful than contextual word embedding.  One more extension I can think is to use this for a language which is not having enough unlabelled data. For example, Languages like Gujarati, Marathi have limited unlabelled data. using dictionary, we can transform embedding of English into some regional languages and then we can again pre-train it using available resource of regional language before fine-tuning it for some specific task.
+
+
+\section{Summary of InferSent}
+
+\subsection{Task definition, objective and motivation}
+In this section I'm going to summarize infersent (Supervised Learning of Universal Sentence Representations from Natural Language Inference Data). This was publish few months back by Facebook AI Research. There are several word embeddings algorithms including two mentioned in section 2 and 3. However, more coarse level embedding like span, sentence and paragraph are relatively under explored and less successful. In this paper, they have presented universal sentence representations trained using supervised data of stanford Natural Language Inference dataset. It outperforms skipthoughts vectors on wide range of tasks. 
+
+Most of embedding generation in NLP is done in unsupervised manner. But these paper claims that for sentence embedding they can take advantage of supervised data. Most of the models in sentence embedding try to predict neighbour sentence of current sentence while embedding. However, this paper show approach of training network using SNLI corpus. They hypothesize that semantic nature of NLI makes it good candidate for learning universal sentence embedding. That means, such sentence embedding captures universally useful features. This embedding is outperforming un-supervised trained model consistently. 
+
+
+
+
+\subsection{Key Idea and its technical description}
+
+Each training instance of SNLI gives us two sentences premise 'u' and hypothesis 'v'. they created three representations from these sentences. 1. con-cat [u;v] 2. element-wise dot product u*v and 3. absolute element-wise difference $|u-v|$. Then they feed these representations to fully connected network and at the end 3-way softmax. There are wide range of neural network architecture available and this paper compare 7 of these architecture. 
+
+First and simplest encoder would be RNN using LSTM or Gated Recurrent Unit(GRU) modules. In this method, for a sequence of T words ($w_{1},w_{2}....w_{T}$), network compute t hidden representation ($h_{1},h_{2}....h_{T}$) with $h_{t} = LSTM(w_{1},w_{2}....w_{T})$  or $GRU(w_{1},w_{2}....w_{T})$ and sentence is represented by last hidden vector $h_T$.
+
+Next one is BiLSTM with max/min pooling.  It is just like previous LSTM but concatenation of left-to-right and right-to-left LSTM. They tried two ways of combining hidden states, by taking maximum value and by taking minimum value.
+
+They also implemented this on self-attention sentence encoder, in which it uses attention mechanism on BiLSTM to generate representation. Here, they train additional weight matrix $u_{W}$ that gives importance of each token in the sequence. this weights are multiplied with BiLSTM output to generate final embedding. 
+
+And the last one is hierarchical convNet. This is currently best performing model on classification task. It concatenates different representations of sentences at different level of abstractions. let's say after convolution layer i u's representation is $u_{i}$ the they concatenate  [ $u_{1}$ , $u_{2}$ , $u_{3}$ , $u_{4}$ ] to generate u.
+
+Now, they used these embedding in 12 different transfer tasks and they gave different evaluation process for each task. For most of the tasks, BiLSTM with max pooling gave best results. In almost all tasks, it performed better than state-of-art model of that time.
+
+
+\subsection{Conclusion, opinion and extension}
+It is widely accepted that unsupervised learning is a best way to produce word embedding, but it may not be the case for sentence embedding. Sentence embedding produced by supervised learning on BiLSTM with max-pooling perform better than any other neural net architecture. Sentence embedding is relatively under-explored area compared to Word embedding. 
+
+This paper used GLoVe as it's word embedding and it didn't try transformer network. It's clear from previous two papers that transformer can remember longer context. So, it would interesting to see how this transformer with/without BERT embedding perform to produce sentence embedding. I believe it should perform better than InferSent.
+
+
+\section{Discussion}
+
+Word and sentence embedding are really important tasks and it model understanding of any given language into embeddings, which can be used to wide range of tasks. My project is to build question answer system and first two papers explicitly explains way in which these embedding can be used to answer questions from a paragraph. Infersent can not directly be used in QA system given that it's classification task, but there are several ways in which it's findings can be useful. We can get sentence or paragraph containing answer using infersent. Infersent is used for tasks like identifying question type and finding similarity between sentences. This tasks can indirectly be used in QA system. One think that I believe can be further explored is sentence embedding using trasnformer and/or BERT word embedding. 
+
+\vspace{2}
+
+\begin{thebibliography}{5}
+\bibitem{latexcompanion} 
+https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language\_understanding\_paper.pdf
+
+\bibitem{latexcompanion} 
+https://arxiv.org/abs/1705.02364
+
+\bibitem{latexcompanion} 
+https://arxiv.org/abs/1810.04805
+
+\bibitem{latexcompanion} 
+https://rajpurkar.github.io/SQuAD-explorer/
+
+\bibitem{latexcompanion} 
+https://github.com/facebookresearch/InferSent
+
+\end{thebibliography}
+\end{document}
